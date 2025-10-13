@@ -43,7 +43,8 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             new("68341f6fe2e7ef70a3060a0a"),
             new("6834202a186efa3c5b07f9a2"),
             new("683421515619c8e2a9031511"),
-            new("68342265a8d674b5740b31f0")
+            new("68342265a8d674b5740b31f0"),
+            new("68342446a8d674b5740b31fc")
         ];
 
         var quests = databaseService.GetQuests();
@@ -276,6 +277,37 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             }
         });
 
+        var part6 = quests[refQuests[5]];
+        part6.Conditions.AvailableForFinish.Clear();
+        part6.Conditions.AvailableForFinish.Add(new QuestCondition()
+        {
+            Id = new("68342446a8d674b5740b3200"),
+            ConditionType = "CounterCreator",
+            DynamicLocale = false,
+            Type = "Elimination",
+            Value = 1,
+            Counter = new()
+            {
+                Conditions =
+                [
+                    new()
+                    {
+                        ConditionType = "Kills",
+                        CompareMethod = ">=",
+                        Distance = new()
+                        {
+                            CompareMethod = ">="
+                        },
+                        Id = new("663b9bde92a93ce2d8b0b835"),
+                        SavageRole = ["bossPartisan"],
+                        Target = new(null, "Savage"),
+                        Value = 1,
+                        ResetOnSessionEnd = true
+                    }
+                ]
+            }
+        });
+
         foreach ((string locale, var lazyLoadedValue) in globals)
         {
             lazyLoadedValue.AddTransformer(localeData =>
@@ -299,6 +331,8 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
                 localeData["662bb2c053b4c3d95e2e0753"] = "Eliminate Knight in one raid";
                 localeData["67e6b6e2727d4a1492fcfe1c"] = "Eliminate Big Pipe in one raid";
                 localeData["68ebc2460d29c043fcbd49b9"] = "Eliminate Bird Eye in one raid";
+                // part6
+                localeData["68342446a8d674b5740b3200"] = "Eliminate Partisan in one raid without dying";
 
                 return localeData;
             });
