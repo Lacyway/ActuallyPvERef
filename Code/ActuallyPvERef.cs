@@ -52,7 +52,10 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             new("67c9d447b53b0fcf1d0bb0ab"),
             new("67c9d4b251ce173bff01eec7"),
             new("67c9d5035be7fc94c806dee9"),
-            new("67449c79268737ef6908d636")
+
+            // non-arena crates
+            new("67449c79268737ef6908d636"),
+            new("6745925da9c9adf0450d5bca")
         ];
 
         production.Recipes?
