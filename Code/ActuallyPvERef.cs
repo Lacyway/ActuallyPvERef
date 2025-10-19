@@ -32,11 +32,26 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
     {
         EditQuests();
         EditRecipes();
+        EditMaps();
+
         logger.Success("ActuallyPvERef database update completed!");
 
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Enables Labyrinth on the map screen and moves the entry point
+    /// </summary>
+    private void EditMaps()
+    {
+        var labyrinth = databaseService.GetLocations().Labyrinth;
+        labyrinth.Base.Enabled = true;
+        labyrinth.Base.IconY = 250f;
+    }
+
+    /// <summary>
+    /// Removes arena / event recipes
+    /// </summary>
     private void EditRecipes()
     {
         var production = databaseService.GetHideout()
@@ -62,6 +77,9 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             .RemoveAll(x => idsToRemove.Contains(x.Id));
     }
 
+    /// <summary>
+    /// Changes Ref quests to be PvE friendly
+    /// </summary>
     private void EditQuests()
     {
         MongoId[] refQuests = [
@@ -203,9 +221,9 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             MinDurability = 0,
             Target = new(
             [
-                "59f32bb586f774757e1e8442", "6662e9aca7e0b43baa3d5f74", "6662e9cda7e0b43baa3d5f76",
-                "675dc9d37ae1a8792107ca96", "675dcb0545b1a2d108011b2b", "684181208d035f60230f63f9",
-                "684180bc51bf8645f7067bc8"
+                ItemTpl.BARTER_DOGTAG_BEAR, ItemTpl.BARTER_DOGTAG_BEAR_EOD, ItemTpl.BARTER_DOGTAG_BEAR_PRESTIGE_1,
+                ItemTpl.BARTER_DOGTAG_BEAR_PRESTIGE_2, ItemTpl.BARTER_DOGTAG_BEAR_PRESTIGE_3, ItemTpl.BARTER_DOGTAG_BEAR_PRESTIGE_4,
+                ItemTpl.BARTER_DOGTAG_BEAR_TUE
             ], null)
         });
         part4.Conditions.AvailableForFinish.Add(new QuestCondition()
@@ -220,9 +238,9 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             MinDurability = 0,
             Target = new(
             [
-                "59f32bb586f774757e1e8442", "6662e9aca7e0b43baa3d5f74", "6662e9cda7e0b43baa3d5f76",
-                "675dc9d37ae1a8792107ca96", "675dcb0545b1a2d108011b2b", "684181208d035f60230f63f9",
-                "684180bc51bf8645f7067bc8"
+                ItemTpl.BARTER_DOGTAG_USEC, ItemTpl.BARTER_DOGTAG_USEC_EOD, ItemTpl.BARTER_DOGTAG_USEC_PRESTIGE_1,
+                ItemTpl.BARTER_DOGTAG_USEC_PRESTIGE_2, ItemTpl.BARTER_DOGTAG_USEC_PRESTIGE_3, ItemTpl.BARTER_DOGTAG_USEC_PRESTIGE_4,
+                ItemTpl.BARTER_DOGTAG_USEC_TUE
             ], null)
         });
 
