@@ -175,7 +175,12 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             OnlyFoundInRaid = true,
             MaxDurability = 100,
             MinDurability = 0,
-            Target = new(["59f32bb586f774757e1e8442"], null)
+            Target = new(
+            [
+                "59f32bb586f774757e1e8442", "6662e9aca7e0b43baa3d5f74", "6662e9cda7e0b43baa3d5f76",
+                "675dc9d37ae1a8792107ca96", "675dcb0545b1a2d108011b2b", "684181208d035f60230f63f9",
+                "684180bc51bf8645f7067bc8"
+            ], null)
         });
         part4.Conditions.AvailableForFinish.Add(new QuestCondition()
         {
@@ -187,7 +192,12 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             OnlyFoundInRaid = true,
             MaxDurability = 100,
             MinDurability = 0,
-            Target = new(["59f32c3b86f77472a31742f0"], null)
+            Target = new(
+            [
+                "59f32bb586f774757e1e8442", "6662e9aca7e0b43baa3d5f74", "6662e9cda7e0b43baa3d5f76",
+                "675dc9d37ae1a8792107ca96", "675dcb0545b1a2d108011b2b", "684181208d035f60230f63f9",
+                "684180bc51bf8645f7067bc8"
+            ], null)
         });
 
         var part5 = quests[refQuests[4]];
