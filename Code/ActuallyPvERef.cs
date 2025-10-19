@@ -31,9 +31,32 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
     public Task OnLoad()
     {
         EditQuests();
+        EditRecipes();
         logger.Success("ActuallyPvERef database update completed!");
 
         return Task.CompletedTask;
+    }
+
+    private void EditRecipes()
+    {
+        var production = databaseService.GetHideout()
+            .Production;
+
+        MongoId[] idsToRemove = [
+            new("67c9d54b017035dd060bff5e"),
+            new("6666d7ea0b734650a91d0a42"),
+            new("6666d899eb78191c502350b2"),
+            new("66575197464c4b4ba4671004"),
+            new("67caf5c5bfe0242ab1032966"),
+            new("6666d829a8298779fc40e537"),
+            new("67c9d447b53b0fcf1d0bb0ab"),
+            new("67c9d4b251ce173bff01eec7"),
+            new("67c9d5035be7fc94c806dee9"),
+            new("67449c79268737ef6908d636")
+        ];
+
+        production.Recipes?
+            .RemoveAll(x => idsToRemove.Contains(x.Id));
     }
 
     private void EditQuests()
