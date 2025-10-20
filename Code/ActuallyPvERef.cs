@@ -2,6 +2,7 @@ using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Spt.Mod;
 using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Servers;
@@ -26,7 +27,7 @@ public record ModMetadata : AbstractModMetadata
 
 [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 5656)]
 public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
-    DatabaseService databaseService, DatabaseServer databaseServer) : IOnLoad
+    DatabaseService databaseService, DatabaseServer databaseServer, ConfigServer configServer) : IOnLoad
 {
     public Task OnLoad()
     {
@@ -138,6 +139,22 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
 
         production.Recipes?
             .RemoveAll(x => idsToRemove.Contains(x.Id));
+
+        var config = configServer.GetConfig<HideoutConfig>();
+
+        MongoId[] newCraftsToRemove = [
+            new("67c5e55af344981d56050e7d"),
+            new("67c5e56ef344981d56050e7e"),
+            new("67c5eb0d533c65affb6732f7"),
+            new("67c5eb17ec157da6c94dea6c"),
+            new("67c5eb28a475f1532525477e"),
+            new("67c5eb3036d41e7e85c62f06"),
+            new("67cb4b25bb7852bce4a14364"),
+            new("67cb4bb6dac4a5492d2e966a")
+        ];
+
+        config?.HideoutCraftsToAdd
+            .RemoveAll(r => newCraftsToRemove.Contains(r.NewId));
     }
 
     /// <summary>
