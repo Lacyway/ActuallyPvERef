@@ -11,8 +11,8 @@ namespace ActuallyPvERef;
 
 public record ModMetadata : AbstractModMetadata
 {
-    public override string ModGuid { get; init; } = "com.lacyway.apr";
-    public override string Name { get; init; } = "ActuallyPvERef";
+    public override string ModGuid { get; init; } = "com.lacyway.lpt";
+    public override string Name { get; init; } = "Lacyway's PvE Tweaks";
     public override string Author { get; init; } = "Lacyway";
     public override List<string>? Contributors { get; init; }
     public override SemanticVersioning.Version Version { get; init; } = new("1.0.0");
@@ -35,11 +35,14 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
         EditRecipes();
         EditMaps();
 
-        logger.Success("ActuallyPvERef database update completed!");
+        logger.Success("Lacyway's PvE Tweaks: Database update completed!");
 
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Removes all transit requirements and converts them into normal quests
+    /// </summary>
     private void EditTransits()
     {
         var quests = databaseService.GetQuests();
