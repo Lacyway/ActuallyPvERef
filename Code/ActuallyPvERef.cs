@@ -30,13 +30,73 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
 {
     public Task OnLoad()
     {
-        EditQuests();
+        EditRef();
+        EditTransits();
         EditRecipes();
         EditMaps();
 
         logger.Success("ActuallyPvERef database update completed!");
 
         return Task.CompletedTask;
+    }
+
+    private void EditTransits()
+    {
+        var quests = databaseService.GetQuests();
+        var globals = databaseServer.GetTables().Locales.Global;
+
+        var transitQuests = quests
+            .Where(q => q.Value?.Conditions?.AvailableForFinish?
+                .Any(cond => cond?.Counter?.Conditions?
+                .Any(y => (y?.Status?.Count ?? 0) == 1 && y.Status.Contains("Transit")) == true) == true
+            ).ToArray();
+
+        var localesToClean = new List<MongoId>();
+
+        logger.Debug($"Found {transitQuests.Length} quests");
+        for (int i = 0; i < transitQuests.Length; i++)
+        {
+            (var questId, var quest) = transitQuests[i];
+            var condition = quest.Conditions?.AvailableForFinish?
+                .FirstOrDefault(x => x.Counter?.Conditions?.Any(y => y.Status?.Count == 1 && y.Status.Contains("Transit")) == true);
+
+            if (condition != null)
+            {
+                logger.Debug("Found the condition");
+                if (condition.OneSessionOnly.GetValueOrDefault())
+                {
+                    logger.Debug("Condition should be cleaned");
+                    localesToClean.AddRange(quest.Conditions.AvailableForFinish.Select(x => x.Id));
+                }
+                quest.Conditions.AvailableForFinish.Remove(condition);
+            }
+        }
+
+        if (localesToClean.Count > 0)
+        {
+            logger.Debug($"Cleaning up {localesToClean.Count} locales.");
+            foreach ((var locale, var lazyLoadedValue) in globals)
+            {
+                lazyLoadedValue.AddTransformer(localeData =>
+                {
+                    if (localeData is null)
+                    {
+                        return localeData;
+                    }
+
+                    foreach (var locale in localesToClean)
+                    {
+                        int index = localeData[locale].LastIndexOf(" (");
+                        if (index > -1)
+                        {
+                            localeData[locale] = localeData[locale][..index];
+                        }
+                    }
+
+                    return localeData;
+                });
+            }
+        }
     }
 
     /// <summary>
@@ -80,7 +140,7 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
     /// <summary>
     /// Changes Ref quests to be PvE friendly
     /// </summary>
-    private void EditQuests()
+    private void EditRef()
     {
         MongoId[] refQuests = [
             new("68341eb25619c8e2a9031501"),
