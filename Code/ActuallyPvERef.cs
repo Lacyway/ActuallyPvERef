@@ -131,6 +131,7 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
             new("67c9d447b53b0fcf1d0bb0ab"),
             new("67c9d4b251ce173bff01eec7"),
             new("67c9d5035be7fc94c806dee9"),
+            new("66582be04de4820934746cea"),
 
             // non-arena crates
             new("67449c79268737ef6908d636"),
@@ -155,6 +156,8 @@ public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
 
         config?.HideoutCraftsToAdd
             .RemoveAll(r => newCraftsToRemove.Contains(r.NewId));
+        production.Recipes?
+            .RemoveAll(x => newCraftsToRemove.Contains(x.Id));
     }
 
     /// <summary>
