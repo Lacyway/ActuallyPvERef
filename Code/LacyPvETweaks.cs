@@ -26,7 +26,7 @@ public record ModMetadata : AbstractModMetadata
 }
 
 [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 5656)]
-public class ActuallyPvERef(ISptLogger<ActuallyPvERef> logger,
+public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     DatabaseService databaseService, DatabaseServer databaseServer, ConfigServer configServer) : IOnLoad
 {
     public Task OnLoad()
