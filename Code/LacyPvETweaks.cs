@@ -8,7 +8,7 @@ using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Servers;
 using SPTarkov.Server.Core.Services;
 
-namespace ActuallyPvERef;
+namespace LacyPvETweaks;
 
 public record ModMetadata : AbstractModMetadata
 {
