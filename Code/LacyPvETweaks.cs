@@ -68,7 +68,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             {
                 for (int j = 0; j < quest.Conditions?.AvailableForFinish?.Count; j++)
                 {
-                    quest.Conditions.AvailableForFinish[i].OneSessionOnly = false;
+                    quest.Conditions.AvailableForFinish[j].OneSessionOnly = false;
                 }
 
                 logger.Debug("Found the condition");
