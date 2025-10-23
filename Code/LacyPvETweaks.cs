@@ -180,6 +180,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         labyrinth.Base.Enabled = true;
         labyrinth.Base.IconY = 250f;
         labyrinth.Base.DisabledForScav = true;
+        labyrinth.Base.ForceOnlineRaidInPVE = false;
     }
 
     /// <summary>
