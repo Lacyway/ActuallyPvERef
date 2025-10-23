@@ -1,0 +1,6 @@
+{
+  "refChanges": false, // makes ref's quests more PvE friendly
+  "removeTransitQuests": false, // changes all transit quests to be normal quests
+  "removeRecipes": false, // removes redundant recipes, e.g. arena crates
+  "enableLabyrinth": false // enables labyrinth on the map screen, removing the need to transit
+}

@@ -1,5 +1,6 @@
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
+using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Spt.Config;
@@ -7,6 +8,9 @@ using SPTarkov.Server.Core.Models.Spt.Mod;
 using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Servers;
 using SPTarkov.Server.Core.Services;
+using SPTarkov.Server.Core.Utils;
+using System.Reflection;
+using Path = System.IO.Path;
 
 namespace LacyPvETweaks;
 
@@ -22,21 +26,75 @@ public record ModMetadata : AbstractModMetadata
     public override Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; }
     public override string? Url { get; init; }
     public override bool? IsBundleMod { get; init; }
-    public override string? License { get; init; } = "MIT";
+    public override string License { get; init; } = "MIT";
 }
 
-[Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 5656)]
+[Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 70000)]
 public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
-    DatabaseService databaseService, DatabaseServer databaseServer, ConfigServer configServer) : IOnLoad
+    DatabaseService databaseService, DatabaseServer databaseServer,
+    ConfigServer configServer, JsonUtil jsonUtil, ModHelper modHelper,
+    IReadOnlyList<SptMod> sptMods) : IOnLoad
 {
     public Task OnLoad()
     {
-        EditRef();
-        EditTransits();
-        EditRecipes();
-        EditMaps();
+        string path;
+        string configPath;
+        TweaksConfig? config;
 
-        logger.Success("Lacyway's PvE Tweaks: Database update completed!");
+        try
+        {
+            path = modHelper.GetAbsolutePathToModFolder(Assembly.GetExecutingAssembly());
+            configPath = Path.Combine(path, "config", "config.jsonc");
+            config = jsonUtil.DeserializeFromFile<TweaksConfig>(configPath);
+        }
+        catch (Exception ex)
+        {
+            logger.Error("Exception caught when loading config, mod won't be loaded", ex);
+            return Task.CompletedTask;
+        }
+
+        if (config == null)
+        {
+            logger.Error("Config was invalid after loading, mod won't be loaded");
+            return Task.CompletedTask;
+        }
+
+        var friendlyRefLoaded = sptMods
+            .Any(m => m.ModMetadata.ModGuid == "com.acidphantasm.reffriendlyquests");
+
+        if (config.RefChanges)
+        {
+            if (!friendlyRefLoaded)
+            {
+                logger.Debug("Changing ref");
+                EditRef();
+            }
+            else
+            {
+                logger.Warning("[Lacyway's PvE Tweaks] You are attempting to modify Ref quests while having Ref Friendly Quests by AcidPhantasm loaded, disabling option...");
+                config.RefChanges = false;
+            }
+        }
+
+        if (config.RemoveTransitQuests)
+        {
+            logger.Debug("Changing transits");
+            EditTransits();
+        }
+
+        if (config.RemoveRecipes)
+        {
+            logger.Debug("Changing recipes");
+            EditRecipes();
+        }
+
+        if (config.EnableLabyrinth)
+        {
+            logger.Debug("Changing labyrinth");
+            EditLabyrinth();
+        }
+
+        logger.Success($"[Lacyway's PvE Tweaks] Successfully loaded!\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}, Labyrinth: {config.EnableLabyrinth}");
 
         return Task.CompletedTask;
     }
@@ -52,7 +110,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         var transitQuests = quests
             .Where(q => q.Value?.Conditions?.AvailableForFinish?
                 .Any(cond => cond?.Counter?.Conditions?
-                .Any(y => (y?.Status?.Count ?? 0) == 1 && y.Status.Contains("Transit")) == true) == true
+                .Any(y => (y?.Status?.Count ?? 0) == 1 && y!.Status!.Contains("Transit")) == true) == true
             ).ToArray();
 
         var localesToClean = new List<MongoId>();
@@ -80,9 +138,9 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
                 if (condition.OneSessionOnly.GetValueOrDefault())
                 {
                     logger.Debug("Condition should be cleaned");
-                    localesToClean.AddRange(quest.Conditions.AvailableForFinish.Select(x => x.Id));
+                    localesToClean.AddRange(quest.Conditions!.AvailableForFinish!.Select(x => x.Id));
                 }
-                quest.Conditions.AvailableForFinish.Remove(condition);
+                quest.Conditions!.AvailableForFinish!.Remove(condition);
             }
         }
 
@@ -100,7 +158,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
 
                     foreach (var locale in localesToClean)
                     {
-                        int index = localeData[locale].LastIndexOf(" (");
+                        var index = localeData[locale].LastIndexOf(" (");
                         if (index > -1)
                         {
                             localeData[locale] = localeData[locale][..index];
@@ -116,7 +174,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// <summary>
     /// Enables Labyrinth on the map screen and moves the entry point
     /// </summary>
-    private void EditMaps()
+    private void EditLabyrinth()
     {
         var labyrinth = databaseService.GetLocations().Labyrinth;
         labyrinth.Base.Enabled = true;
@@ -188,7 +246,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         var globals = databaseServer.GetTables().Locales.Global;
 
         var part1 = quests[refQuests[0]];
-        part1.Conditions.AvailableForFinish.Clear();
+        part1.Conditions.AvailableForFinish!.Clear();
         part1.Conditions.AvailableForFinish.Add(new QuestCondition()
         {
             Id = new("68341eb25619c8e2a9031504"),
@@ -217,7 +275,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         });
 
         var part2 = quests[refQuests[1]];
-        part2.Conditions.AvailableForFinish.Clear();
+        part2.Conditions.AvailableForFinish!.Clear();
         part2.Conditions.AvailableForFinish.Add(new QuestCondition()
         {
             Id = new("68341f6fe2e7ef70a3060a0d"),
@@ -246,7 +304,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         });
 
         var part3 = quests[refQuests[2]];
-        part3.Conditions.AvailableForFinish.Clear();
+        part3.Conditions.AvailableForFinish!.Clear();
         part3.Conditions.AvailableForFinish.Add(new QuestCondition()
         {
             Id = new("662bb201589b7f21d7ab98fa"),
@@ -301,7 +359,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         });
 
         var part4 = quests[refQuests[3]];
-        part4.Conditions.AvailableForFinish.Clear();
+        part4.Conditions.AvailableForFinish!.Clear();
         part4.Conditions.AvailableForFinish.Add(new QuestCondition()
         {
             Id = new("683421515619c8e2a9031514"),
@@ -338,7 +396,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         });
 
         var part5 = quests[refQuests[4]];
-        part5.Conditions.AvailableForFinish.Clear();
+        part5.Conditions.AvailableForFinish!.Clear();
         part5.Conditions.AvailableForFinish.Add(new QuestCondition()
         {
             Id = new("662bb2c053b4c3d95e2e0753"),
@@ -425,7 +483,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         });
 
         var part6 = quests[refQuests[5]];
-        part6.Conditions.AvailableForFinish.Clear();
+        part6.Conditions.AvailableForFinish!.Clear();
         part6.Conditions.AvailableForFinish.Add(new QuestCondition()
         {
             Id = new("68342446a8d674b5740b3200"),
@@ -455,7 +513,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             }
         });
 
-        foreach ((string locale, var lazyLoadedValue) in globals)
+        foreach ((var locale, var lazyLoadedValue) in globals)
         {
             lazyLoadedValue.AddTransformer(localeData =>
             {
