@@ -116,7 +116,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         var localesToClean = new List<MongoId>();
 
         logger.Debug($"Found {transitQuests.Length} quests");
-        for (int i = 0; i < transitQuests.Length; i++)
+        for (var i = 0; i < transitQuests.Length; i++)
         {
             (var questId, var quest) = transitQuests[i];
             var condition = quest.Conditions?.AvailableForFinish?
@@ -124,7 +124,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
 
             if (condition != null)
             {
-                for (int j = 0; j < quest.Conditions?.AvailableForFinish?.Count; j++)
+                for (var j = 0; j < quest.Conditions?.AvailableForFinish?.Count; j++)
                 {
                     var cond = quest.Conditions.AvailableForFinish[j];
                     if (cond.OneSessionOnly.GetValueOrDefault())
