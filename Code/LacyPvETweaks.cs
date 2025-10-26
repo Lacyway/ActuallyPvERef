@@ -100,7 +100,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             EditQuests();
         }
 
-        logger.Success($"[Lacyway's PvE Tweaks] Successfully loaded!" +
+        logger.Success("[Lacyway's PvE Tweaks] Successfully loaded!" +
             $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}, Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}");
 
         return Task.CompletedTask;
