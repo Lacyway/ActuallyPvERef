@@ -94,9 +94,37 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             EditLabyrinth();
         }
 
-        logger.Success($"[Lacyway's PvE Tweaks] Successfully loaded!\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}, Labyrinth: {config.EnableLabyrinth}");
+        if (config.QuestTweaks)
+        {
+            logger.Debug("Changing quests");
+            EditQuests();
+        }
+
+        logger.Success($"[Lacyway's PvE Tweaks] Successfully loaded!" +
+            $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}, Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}");
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Edits some quests to be less grindy
+    /// </summary>
+    private void EditQuests()
+    {
+        var quests = databaseService.GetQuests();
+        var testDrivePt2 = quests["63a5cf262964a7488f5243ce"];
+        var testDrivePt2Cond = testDrivePt2.Conditions.AvailableForFinish?.FirstOrDefault();
+        if (testDrivePt2Cond != null)
+        {
+            testDrivePt2Cond.Value = 5;
+        }
+
+        var testDrivePt3 = quests["64f5deac39e45b527a7c4232"];
+        var testDrivePt3Cond = testDrivePt3.Conditions.AvailableForFinish?.FirstOrDefault();
+        if (testDrivePt3Cond != null)
+        {
+            testDrivePt3Cond.Value = 5;
+        }
     }
 
     /// <summary>

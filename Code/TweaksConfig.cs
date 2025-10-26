@@ -27,4 +27,10 @@ public record TweaksConfig
     /// </summary>
     [JsonPropertyName("enableLabyrinth")]
     public bool EnableLabyrinth { get; set; }
+
+    /// <summary>
+    /// Makes several vanilla quests less grindy/obnoxious
+    /// </summary>
+    [JsonPropertyName("questTweaks")]
+    public bool QuestTweaks { get; set; }
 }
