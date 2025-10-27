@@ -33,4 +33,10 @@ public record TweaksConfig
     /// </summary>
     [JsonPropertyName("questTweaks")]
     public bool QuestTweaks { get; set; }
+
+    /// <summary>
+    /// Adds new recipes to the hideout
+    /// </summary>
+    [JsonPropertyName("addRecipes")]
+    public bool AddRecipes { get; set; }
 }

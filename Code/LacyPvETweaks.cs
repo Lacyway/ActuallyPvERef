@@ -3,6 +3,8 @@ using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Eft.Hideout;
+using SPTarkov.Server.Core.Models.Enums.Hideout;
 using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Spt.Mod;
 using SPTarkov.Server.Core.Models.Utils;
@@ -100,10 +102,63 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             EditQuests();
         }
 
+        if (config.AddRecipes)
+        {
+            logger.Debug("Adding new recipes");
+            AddProductions();
+        }
+
         logger.Success("[Lacyway's PvE Tweaks] Successfully loaded!" +
-            $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}, Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}");
+            $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}," +
+            $" Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}, AddRecipes: {config.AddRecipes}");
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Adds some new production recipes to the hideout
+    /// </summary>
+    private void AddProductions()
+    {
+        var recipes = databaseService.GetHideout().Production.Recipes;
+        recipes?.Add(new()
+        {
+            AreaType = HideoutAreas.IntelligenceCenter,
+            Count = 1,
+            EndProduct = new("679b9819a2f2dd4da9023512"),
+            Id = new("68ff59b36e8d3b39f1b42378"),
+            IsCodeProduction = false,
+            IsEncoded = false,
+            Locked = false,
+            NeedFuelForAllProductionTime = false,
+            ProductionLimitCount = 0,
+            ProductionTime = 3600,
+            Requirements = [
+                new Requirement() {
+                    AreaType = 11,
+                    RequiredLevel = 2,
+                    Type = "Area"
+                },
+                new Requirement() {
+                    TemplateId = new("5c94bbff86f7747ee735c08f"),
+                    Count = 2,
+                    Type = "Item"
+                },
+                new Requirement() {
+                    TemplateId = new("5c12613b86f7743bbe2c3f76"),
+                    Count = 2,
+                    Type = "Item"
+                },
+                new Requirement() {
+                    TemplateId = new("62a0a16d0b9d3c46de5b6e97"),
+                    Type = "Item"
+                },
+                new Requirement() {
+                    TemplateId = new("5c052fb986f7746b2101e909"),
+                    Type = "Tool"
+                }
+            ]
+        });
     }
 
     /// <summary>
@@ -124,6 +179,13 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         if (testDrivePt3Cond != null)
         {
             testDrivePt3Cond.Value = 5;
+        }
+
+        var hunter = quests["600302d73b897b11364cd161"];
+        var hunterCond = hunter.Conditions.AvailableForFinish?.FirstOrDefault();
+        if (hunterCond != null)
+        {
+            hunterCond.Value = 10;
         }
     }
 
