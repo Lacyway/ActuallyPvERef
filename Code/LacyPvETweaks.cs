@@ -232,6 +232,29 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
                 }
                 quest.Conditions!.AvailableForFinish!.Remove(condition);
             }
+
+            var childConditions = quest.Conditions?.AvailableForFinish?
+                .Where(c => c.VisibilityConditions?.Count > 0)
+                .ToList();
+
+            if (childConditions != null)
+            {
+                foreach (var childCondition in childConditions)
+                {
+                    var toRemove = childCondition.VisibilityConditions?
+                        .Where(vc => vc?.Target == condition?.Id)
+                        .ToList();
+
+                    if (toRemove != null)
+                    {
+                        foreach (var removeCondition in toRemove)
+                        {
+                            logger.Debug($"Removing visibility condition {condition.Id}");
+                            childCondition.VisibilityConditions.Remove(removeCondition);
+                        }
+                    }
+                }
+            }
         }
 
         if (localesToClean.Count > 0)
