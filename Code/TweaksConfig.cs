@@ -39,4 +39,10 @@ public record TweaksConfig
     /// </summary>
     [JsonPropertyName("addRecipes")]
     public bool AddRecipes { get; set; }
+
+    /// <summary>
+    /// Removes map limitations from certain quests
+    /// </summary>
+    [JsonPropertyName("removeMapLimitations")]
+    public bool RemoveMapLimitations { get; set; }
 }

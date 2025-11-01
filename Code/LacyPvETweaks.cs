@@ -108,11 +108,83 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             AddProductions();
         }
 
+        if (config.RemoveMapLimitations)
+        {
+            logger.Debug("Removing map limitations");
+            RemoveMapLimitations();
+        }
+
         logger.Success("[Lacyway's PvE Tweaks] Successfully loaded!" +
             $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}," +
             $" Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}, AddRecipes: {config.AddRecipes}");
 
         return Task.CompletedTask;
+    }
+
+    private void RemoveMapLimitations()
+    {
+        var quests = databaseService.GetQuests();
+        var globals = databaseServer.GetTables().Locales.Global;
+
+        MongoId[] questsToClean = [
+            new("59ca2eb686f77445a80ed049"), // punisher pt. 6
+            new("5c0bd01e86f7747cdd799e56"), // insomnia
+            new("5d25bfd086f77442734d3007"), // surv path - zhivchik
+            new("5d25e29d86f7740a22516326") // surv path - eagle-owl
+        ];
+
+        List<QuestCondition> toClean = [];
+        var punisherPt6 = quests[questsToClean[0]];
+        toClean.AddRange(punisherPt6.Conditions?.AvailableForFinish?
+            .Where(c => c.Counter?.Conditions?.Any(qc => qc.ConditionType == "Location") == true));
+
+        var insomnia = quests[questsToClean[1]];
+        toClean.AddRange(insomnia.Conditions?.AvailableForFinish?
+            .Where(c => c.Counter?.Conditions?.Any(qc => qc.ConditionType == "Location") == true));
+
+        var zhivchik = quests[questsToClean[2]];
+        toClean.AddRange(zhivchik.Conditions?.AvailableForFinish?
+            .Where(c => c.Counter?.Conditions?.Any(qc => qc.ConditionType == "Location") == true));
+
+        var eagleOwl = quests[questsToClean[3]];
+        toClean.AddRange(eagleOwl.Conditions?.AvailableForFinish?
+            .Where(c => c.Counter?.Conditions?.Any(qc => qc.ConditionType == "Location") == true));
+
+        var removed = 0;
+        foreach (var questCondition in toClean)
+        {
+            var result = questCondition.Counter?.Conditions?
+                .RemoveAll(c => c.ConditionType == "Location");
+
+            if (result != null)
+            {
+                removed++;
+            }
+        }
+
+        logger.Debug($"Removed {removed} conditions, cleaning {toClean.Count} locales");
+
+        foreach ((var locale, var lazyLoadedValue) in globals)
+        {
+            lazyLoadedValue.AddTransformer(localeData =>
+            {
+                if (localeData is null)
+                {
+                    return localeData;
+                }
+
+                foreach (var locale in toClean.Select(c => c.Id))
+                {
+                    var index = localeData[locale].LastIndexOf(" (");
+                    if (index > -1)
+                    {
+                        localeData[locale] = localeData[locale][..index];
+                    }
+                }
+
+                return localeData;
+            });
+        }
     }
 
     /// <summary>
@@ -249,8 +321,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
                     {
                         foreach (var removeCondition in toRemove)
                         {
-                            logger.Debug($"Removing visibility condition {condition.Id}");
-                            childCondition.VisibilityConditions.Remove(removeCondition);
+                            logger.Debug($"Removing visibility condition {condition?.Id}");
+                            childCondition.VisibilityConditions?.Remove(removeCondition);
                         }
                     }
                 }
